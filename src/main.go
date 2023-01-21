@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -10,6 +11,10 @@ import (
 
 	"github.com/01100100/forms"
 )
+
+const DB_PATH = "/data/db.json"
+
+var REDIRECT_URL = os.Getenv("REDIRECT_URL")
 
 type Form struct {
 	name         string
@@ -56,7 +61,7 @@ func formHandler(response http.ResponseWriter, request *http.Request) {
 	}
 
 	// Write data to file.
-	f, err := os.OpenFile("db.json", os.O_APPEND|os.O_WRONLY, 0644)
+	f, err := os.OpenFile(DB_PATH, os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -71,8 +76,8 @@ func formHandler(response http.ResponseWriter, request *http.Request) {
 		fmt.Println(err)
 
 	}
-	fmt.Fprintf(response, "form sent successfully!")
 	fmt.Println("Successfully logged form data.")
+	http.Redirect(response, request, REDIRECT_URL, http.StatusFound)
 
 	// TODO: process data and send out emails.
 
@@ -80,6 +85,15 @@ func formHandler(response http.ResponseWriter, request *http.Request) {
 }
 
 func main() {
+
+	if _, err := os.Stat(DB_PATH); errors.Is(err, os.ErrNotExist) {
+		file, err := os.Create(DB_PATH)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer file.Close()
+	}
+
 	http.HandleFunc("/forms", formHandler)
 	fmt.Printf("Starting server at port 8080\n")
 	if err := http.ListenAndServe(":8080", nil); err != nil {

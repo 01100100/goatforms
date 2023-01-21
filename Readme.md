@@ -46,16 +46,20 @@ curl -L https://fly.io/install.sh | sh
 The CLI can be used to create secrets, deploy the app, and ssh into the server to execute commands.
 
 ```bash
+# First create a volume mount to be used for a persistent storage
+fly volumes create --app goatform goat_data --size 1
+# Set up a ENV VAR with the redirect url.
+flyctl secrets set REDIRECT_URL=www.example.com
 # This will verify the config and send it to a build and deploy pipeline.
 fly deploy
-# If the deployment is successful, the defined Entrypoint in the Dockerfile will be executed, creating a starting the server.
+# If the deployment is successful, the defined Entrypoint in the Dockerfile will be executed, starting the server.
 ```
 
 ```bash
 ➜  goatform git:(main) ✗ flyctl ssh console
 
 Connecting to xxxx:x:xxxx:xxx:xx:xxxx:xxxx:x... complete
-/ # cat app/db.json
+/ # cat /data/db.json
 {"FormData":{"Values":{"email":["example@email.com"],"name":["Foo Bar"],"spam":["safe"],"submit":[""]},"Files":{}}}
 ...
 / #
@@ -65,5 +69,4 @@ Build and deploy process logs are available through the [fly.io dashboard](https
 
 ## Future
 
-- [ ] Mount a storage volume. Right now logs are ephemeral.
 - [ ] Write a super small front end with password auth.

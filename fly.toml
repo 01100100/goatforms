@@ -1,22 +1,41 @@
-# fly.toml file generated for goatform on 2023-01-20T17:23:49+01:00
+# fly.toml file generated for goatform on 2023-01-20T16:29:31+01:00
 
 app = "goatform"
+kill_signal = "SIGINT"
+kill_timeout = 5
+processes = []
+
+[env]
+
+[experimental]
+auto_rollback = true
 
 [[services]]
-  internal_port = 8080
-  protocol = "tcp"
-  [services.concurrency]
-    hard_limit = 25
-    soft_limit = 20
+http_checks = []
+internal_port = 8080
+processes = ["app"]
+protocol = "tcp"
+script_checks = []
+[services.concurrency]
+hard_limit = 25
+soft_limit = 20
+type = "connections"
 
-  [[services.ports]]
-    handlers = ["http"]
-    port = "80"
+[[services.ports]]
+force_https = true
+handlers = ["http"]
+port = 8080
 
-  [[services.ports]]
-    handlers = ["tls", "http"]
-    port = "443"
+[[services.ports]]
+handlers = ["tls", "http"]
+port = 443
 
-  [[services.tcp_checks]]
-    interval = 10000
-    timeout = 2000
+[[services.tcp_checks]]
+grace_period = "1s"
+interval = "15s"
+restart_limit = 0
+timeout = "2s"
+
+[mounts]
+source = "goat_data"
+destination = "/data"
